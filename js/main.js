@@ -6,10 +6,33 @@ Vue.component("board", {
 <ul class="columns">
 
 <li class="column">
-    <h3>Запланированные задачи</h3>  
+    <h3>Запланированные задачи</h3>
+         <form>
+           <div id="createcard">
+
+          <div>
+              <p>Название карточки:</p>
+              <input type="text" placeholder="Название" v-model="title" maxlength="15">
+          </div>
+
+          <div>
+          <p>Описание задачи:</p>
+          <input type="text" placeholder="Описание" v-model="desc" maxlength="60">
+          </div>
+
+          <div>
+          <input type="date" id="start" name="start" v-model="deadline"
+
+          min="2023-01-01" max="2030-12-31">
+          </div>
+          
+      </div>
+      <p>Время дедлайна</p>
+      <input type="submit" @click.prevent="CreateCard" value="Создать карточку"> 
+      </form>  
     <ul>
         <li v-for="card in column1">
-            <card :column=1></card>
+            <card :column=1 :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -53,9 +76,23 @@ Vue.component("board", {
 
             allcolumns:[],
 
+            title:null,
+            desc:null,
+            deadline:null,
+
         }
     },
     methods: {
+        CreateCard(){
+            let createtime = new Date()
+            info ={
+                title:this.title,
+                desc:this.desc,
+                deadline:this.deadline,
+                createtime:createtime,
+            }
+            this.column1.push(info)
+        },
     },
     mounted() {
     },
@@ -68,6 +105,10 @@ Vue.component("board", {
 Vue.component("card", {
     template: `
 <div class="card">
+<p>{{this.title}}</p>
+<p>{{this.desc}}</p>
+<p>{{this.deadline}}</p>
+<p>{{this.createtime}}</p>
 </div>
     `,
     data() {
@@ -80,8 +121,21 @@ Vue.component("card", {
     },
     props:{ 
         column:{
-            type:Boolean
-        } 
+            type:Number
+        },
+        title:{
+            type:String
+        },
+        desc:{
+            type:String
+        },
+        deadline:{
+            type:String
+        },
+        createtime:{
+            type:Date
+        }
+        
     },
     computed: {
     }
