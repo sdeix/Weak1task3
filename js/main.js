@@ -32,7 +32,7 @@ Vue.component("board", {
       </form>  
     <ul>
         <li v-for="card in column1">
-            <card @deletethis="Delete" :column=1 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveright="MoveR" :column=1 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -41,7 +41,7 @@ Vue.component("board", {
     <h3>Задачи в работе</h3>
     <ul>
         <li v-for="card in column2">
-            <card @deletethis="Delete" :column=2></card>
+            <card @deletethis="Delete" @moveleft="MoveL" @moveright="MoveR" :column=2 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -50,7 +50,7 @@ Vue.component("board", {
     <h3>Тестирование</h3> 
     <ul>
         <li v-for="card in column3">
-            <card @deletethis="Delete" :column=3></card>
+            <card @deletethis="Delete" @moveleft="MoveL" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul> 
 </li>
@@ -59,7 +59,7 @@ Vue.component("board", {
     <h3>Выполненные задачи</h3>  
     <ul>
         <li v-for="card in column4">
-            <card @deletethis="Delete" :column=4></card>
+            <card @deletethis="Delete" :column=4 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -125,7 +125,48 @@ Vue.component("board", {
                 if(this.column4[i].id==id){
                     this.column4.splice(i, 1)
             }}
-        }
+        },
+        MoveL(id,col){
+            if(col==2){
+                for(let i = 0; i < this.column2.length; i++){
+                    if(this.column2[i].id==id){
+                        console.log(this.column2[i])
+                        this.column1.push(this.column2[i])
+                        this.column2.splice(i, 1)
+                }}
+            }
+            else if(col==3){
+                for(let i = 0; i < this.column3.length; i++){
+                    if(this.column3[i].id==id){
+                        this.column2.push(this.column3[i])
+                        this.column3.splice(i, 1)
+                }}
+            }
+        },
+        MoveR(id,col){
+            if(col==1){
+                for(let i = 0; i < this.column1.length; i++){
+                    if(this.column1[i].id==id){
+                        console.log(this.column1[i])
+                        this.column2.push(this.column1[i])
+                        this.column1.splice(i, 1)
+                }}
+            }
+            else if(col==2){
+                for(let i = 0; i < this.column2.length; i++){
+                    if(this.column2[i].id==id){
+                        this.column3.push(this.column2[i])
+                        this.column2.splice(i, 1)
+                }}
+            }
+            else if(col==3){
+                for(let i = 0; i < this.column3.length; i++){
+                    if(this.column3[i].id==id){
+                        this.column4.push(this.column3[i])
+                        this.column3.splice(i, 1)
+                }}
+            }
+        },
     },
     mounted() {
     },
@@ -145,6 +186,9 @@ Vue.component("card", {
 <p>{{this.createtime}}</p>
 <div>
 <button v-on:click="deletethis">Удалить карточку</button>
+<button v-if="column==2||column==3" v-on:click="moveleft">Переместить назад</button>
+<button v-if="column==1||column==2||column==3" v-on:click="moveright">Переместить дальше</button>
+
 </div>
 </div>
     `,
@@ -155,7 +199,13 @@ Vue.component("card", {
     methods: {
         deletethis(){
             this.$emit("deletethis",this.id);
-        }
+        },
+        moveleft(){
+            this.$emit("moveleft",this.id,this.column);
+        },
+        moveright(){
+            this.$emit("moveright",this.id,this.column);
+        },
     },
     mounted() {
     },
