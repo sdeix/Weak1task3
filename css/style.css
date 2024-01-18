@@ -31,3 +31,15 @@ ul{
 .nodone{
     background-color: #f78888;
 }
+.reason{
+    margin: 5px;
+}
+
+button{
+    margin: 10px;
+    width: 90%;
+}
+input{
+    margin: 10px;
+    width: 80%;
+}

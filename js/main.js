@@ -41,7 +41,7 @@ Vue.component("board", {
     <h3>Задачи в работе</h3>
     <ul>
         <li v-for="card in column2">
-            <card @deletethis="Delete" @moveright="MoveR" @edit="EditCard" :reason="card.reason"  :last_red="card.last_red" :column=2 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveright="MoveR" @edit="EditCard" :reasons="card.reasons"  :last_red="card.last_red" :column=2 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -50,7 +50,7 @@ Vue.component("board", {
     <h3>Тестирование</h3> 
     <ul>
         <li v-for="card in column3">
-            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :reason="card.reason"  :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :reasons="card.reasons"  :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul> 
 </li>
@@ -69,6 +69,7 @@ Vue.component("board", {
     `,
     data() {
         return{
+            log:0,
             column1:[],
             column2:[],
             column3:[],
@@ -108,7 +109,7 @@ Vue.component("board", {
                     createtime:String(createtime),
                     edit:false,
                     last_red:"",
-                    reason:"",
+                    reasons:[],
                     result:null,
                 }
                 this.id+=1
@@ -137,8 +138,8 @@ Vue.component("board", {
             if(col==3){
                 for(let i = 0; i < this.column3.length; i++){
                     if(this.column3[i].id==id){
-                        this.column3[i].reason = reason
-                        console.log(this.column3[i].reason)
+                        console.log(reason,)
+                        this.column3[i].reasons.push(reason)
                         this.column2.push(this.column3[i])
                         this.column3.splice(i, 1)
                 }}
@@ -191,6 +192,7 @@ Vue.component("board", {
             }
         },
         EditCard(id,titlenew,descnew,deadlinenew){
+            this.log+=1
             for(let i = 0; i < this.column1.length; i++){
                 if(this.column1[i].id==id){
                     this.deadlin = deadlinenew
@@ -208,11 +210,33 @@ Vue.component("board", {
             }}
             for(let i = 0; i < this.column2.length; i++){
                 if(this.column2[i].id==id){
-                        this.column2.splice(i, 1)
+                    this.deadlin = deadlinenew
+                    this.year = this.deadlin[0] + this.deadlin[1] + this.deadlin[2] + this.deadlin[3]
+                    this.month = this.deadlin[5] + this.deadlin[6]
+                    this.day= this.deadlin[8] + this.deadlin[9]
+                    this.deadline = []
+                    this.deadline.push({day:this.day, month:this.month, year:this.year})
+                    let last_red = new Date()
+
+                    this.column2[i].title=titlenew,
+                    this.column2[i].desc=descnew,
+                    this.column2[i].deadline=this.deadline
+                    this.column2[i].last_red=String(last_red)
             }}
             for(let i = 0; i < this.column3.length; i++){
                 if(this.column3[i].id==id){
-                    this.column3.splice(i, 1)
+                    this.deadlin = deadlinenew
+                    this.year = this.deadlin[0] + this.deadlin[1] + this.deadlin[2] + this.deadlin[3]
+                    this.month = this.deadlin[5] + this.deadlin[6]
+                    this.day= this.deadlin[8] + this.deadlin[9]
+                    this.deadline = []
+                    this.deadline.push({day:this.day, month:this.month, year:this.year})
+                    let last_red = new Date()
+
+                    this.column3[i].title=titlenew,
+                    this.column3[i].desc=descnew,
+                    this.column3[i].deadline=this.deadline
+                    this.column3[i].last_red=String(last_red)
             }}
         }
     },
@@ -250,6 +274,11 @@ Vue.component("board", {
             const parsed = JSON.stringify(this.allColumns);
             localStorage.setItem('allColumns', parsed);
       },
+      log(){
+        allColumns = [this.column1, this.column2, this.column3, this.column4]    
+        const parsed = JSON.stringify(this.allColumns);
+        localStorage.setItem('allColumns', parsed);        
+      }
   }
 });
 
@@ -263,7 +292,10 @@ Vue.component("card", {
 <p>Дедлайн: {{this.deadline[0].day}}.{{this.deadline[0].month}}.{{this.deadline[0].year}}</p>
 <p>Дата создания:{{this.createtime}}</p>
 <p v-if="last_red">Последнее редактирование: {{this.last_red}}</p>
-<p v-if="reason">Причина возврата: {{this.reason}}</p>
+<p v-if="reasons">Причины возврата:</p>
+<ul v-for="i in reasons"> 
+<li class="reason">{{i}}</li>
+</ul>
 
 <div>
 <button v-on:click="deletethis">Удалить карточку</button>
@@ -306,6 +338,7 @@ min="2023-01-01" max="2030-12-31">
             titlenew:null,
             descnew:null,
             deadlinenew:null,
+            reason:null,
         }
     },
     methods: {
@@ -350,8 +383,8 @@ min="2023-01-01" max="2030-12-31">
         last_red:{
             type:String,
         },
-        reason:{
-            type:String,
+        reasons:{
+            type:Array,
         },
         result:{
             type:String,
