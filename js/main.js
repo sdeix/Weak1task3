@@ -41,7 +41,7 @@ Vue.component("board", {
     <h3>Задачи в работе</h3>
     <ul>
         <li v-for="card in column2">
-            <card @deletethis="Delete" @moveright="MoveR" @edit="EditCard" :last_red="card.last_red" :column=2 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveright="MoveR" @edit="EditCard" :reason="card.reason"  :last_red="card.last_red" :column=2 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -50,7 +50,7 @@ Vue.component("board", {
     <h3>Тестирование</h3> 
     <ul>
         <li v-for="card in column3">
-            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :reason="card.reason" :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul> 
 </li>
@@ -79,6 +79,7 @@ Vue.component("board", {
             title:null,
             desc:null,
 
+            reason:null,
             last_red:null,
 
             year:null,
@@ -106,6 +107,7 @@ Vue.component("board", {
                     createtime:String(createtime),
                     edit:false,
                     last_red:"",
+                    reason:"",
                 }
                 this.id+=1
                 this.column1.push(info)
@@ -129,17 +131,12 @@ Vue.component("board", {
                     this.column4.splice(i, 1)
             }}
         },
-        MoveL(id,col){
-            if(col==2){
-                for(let i = 0; i < this.column2.length; i++){
-                    if(this.column2[i].id==id){
-                        this.column1.push(this.column2[i])
-                        this.column2.splice(i, 1)
-                }}
-            }
-            else if(col==3){
+        MoveL(id,col,reason){
+            if(col==3){
                 for(let i = 0; i < this.column3.length; i++){
                     if(this.column3[i].id==id){
+                        this.column3[i].reason = reason
+                        console.log(this.column3[i].reason)
                         this.column2.push(this.column3[i])
                         this.column3.splice(i, 1)
                 }}
@@ -209,12 +206,19 @@ Vue.component("card", {
 <p>Описание: {{this.desc}}</p>
 <p>Дедлайн: {{this.deadline[0].day}}.{{this.deadline[0].month}}.{{this.deadline[0].year}}</p>
 <p>Дата создания:{{this.createtime}}</p>
-<p>Последнее редактирование: {{this.last_red}}</p>
+<p v-if="last_red">Последнее редактирование: {{this.last_red}}</p>
+<p>Причина возврата: {{this.reason}}</p>
 
 <div>
 <button v-on:click="deletethis">Удалить карточку</button>
 <button v-if="column==1||column==2||column==3" v-on:click="editable">Редактировать</button>
-<button v-if="column==3" v-on:click="moveleft">Переместить назад</button>
+
+<div v-if="column==3" class="sendback">
+<button :disabled="!reason" v-on:click="moveleft">Переместить назад</button>
+<p>Название карточки:</p>
+<input type="text" placeholder="Причина возврата" v-model="reason" maxlength="40">
+</div>
+
 <button v-if="column==1||column==2||column==3" v-on:click="moveright">Переместить дальше</button>
 <form v-if="edit">
 <div id="redact">
@@ -233,7 +237,7 @@ Vue.component("card", {
 <input type="date" id="start" name="start" v-model="deadlinenew"
 
 min="2023-01-01" max="2030-12-31">
-<input type="submit" @click.prevent="RedCard" value="Создать карточку"> 
+<input type="submit" @click.prevent="RedCard" value="Редактировать карточку"> 
 </div>
 </div>
 </form>
@@ -253,7 +257,7 @@ min="2023-01-01" max="2030-12-31">
             this.$emit("deletethis",this.id);
         },
         moveleft(){
-            this.$emit("moveleft",this.id,this.column);
+            this.$emit("moveleft",this.id,this.column, this.reason);
         },
         moveright(){
             this.$emit("moveright",this.id,this.column);
@@ -292,6 +296,9 @@ min="2023-01-01" max="2030-12-31">
         last_red:{
             type:String,
         },
+        reason:{
+            type:String,
+        }
         
     },
     computed: {
