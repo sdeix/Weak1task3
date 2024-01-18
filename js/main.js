@@ -50,7 +50,7 @@ Vue.component("board", {
     <h3>Тестирование</h3> 
     <ul>
         <li v-for="card in column3">
-            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :reason="card.reason" :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" @moveleft="MoveL" @edit="EditCard" :reason="card.reason"  :last_red="card.last_red" @moveright="MoveR" :column=3 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul> 
 </li>
@@ -59,7 +59,7 @@ Vue.component("board", {
     <h3>Выполненные задачи</h3>  
     <ul>
         <li v-for="card in column4">
-            <card @deletethis="Delete" :last_red="card.last_red" :column=4 :id="card.id" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
+            <card @deletethis="Delete" :last_red="card.last_red" :column=4 :id="card.id" :result="card.result" :title="card.title" :desc="card.desc" :deadline="card.deadline" :createtime="card.createtime"></card>
         </li>
     </ul>
 </li>
@@ -93,6 +93,7 @@ Vue.component("board", {
     methods: {
         CreateCard(){
             if(this.title&&this.desc&&this.deadlin){
+                this.deadline=[]
                 this.year = this.deadlin[0] + this.deadlin[1] + this.deadlin[2] + this.deadlin[3]
                 this.month = this.deadlin[5] + this.deadlin[6]
                 this.day= this.deadlin[8] + this.deadlin[9]
@@ -108,6 +109,7 @@ Vue.component("board", {
                     edit:false,
                     last_red:"",
                     reason:"",
+                    result:null,
                 }
                 this.id+=1
                 this.column1.push(info)
@@ -160,6 +162,29 @@ Vue.component("board", {
             else if(col==3){
                 for(let i = 0; i < this.column3.length; i++){
                     if(this.column3[i].id==id){
+                        let current_date = new Date()
+                        if (current_date.getFullYear() > Number(this.column3[i].deadline[0].year)){
+                            this.column3[i].result="success"
+                        }
+                        else if(current_date.getFullYear() < Number(this.column3[i].deadline[0].year)){
+                            this.column3[i].result="fail"
+                        }
+                        else if(current_date.getFullYear() == Number(this.column3[i].deadline[0].year)){
+                            if ((current_date.getMonth()+1) > Number(this.column3[i].deadline[0].month)){
+                                this.column3[i].result="success"
+                            }
+                            else if((current_date.getMonth()+1) < Number(this.column3[i].deadline[0].month)){
+                                this.column3[i].result="fail"
+                            }
+                            else if((current_date.getMonth()+1) == Number(this.column3[i].deadline[0].month)){
+                                if (current_date.getDate() <= Number(this.column3[i].deadline[0].day)){
+                                    this.column3[i].result="success"
+                                }
+                                else if(current_date.getDate() > Number(this.column3[i].deadline[0].day)){
+                                    this.column3[i].result="fail"
+                                }
+                            }
+                        }
                         this.column4.push(this.column3[i])
                         this.column3.splice(i, 1)
                 }}
@@ -203,11 +228,13 @@ Vue.component("card", {
     template: `
 <div class="card">
 <h4>{{this.title}}</h4>
+<p v-if="result=='success'">Карточка выполнена в срок<p>
+<p v-if="result=='fail'">Карточка не выполнена в срок<p>
 <p>Описание: {{this.desc}}</p>
 <p>Дедлайн: {{this.deadline[0].day}}.{{this.deadline[0].month}}.{{this.deadline[0].year}}</p>
 <p>Дата создания:{{this.createtime}}</p>
 <p v-if="last_red">Последнее редактирование: {{this.last_red}}</p>
-<p>Причина возврата: {{this.reason}}</p>
+<p v-if="reason">Причина возврата: {{this.reason}}</p>
 
 <div>
 <button v-on:click="deletethis">Удалить карточку</button>
@@ -298,6 +325,10 @@ min="2023-01-01" max="2030-12-31">
         },
         reason:{
             type:String,
+        },
+        result:{
+            type:String,
+            required:false,
         }
         
     },

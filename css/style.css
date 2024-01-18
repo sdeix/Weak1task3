@@ -24,3 +24,10 @@ ul{
     margin: 0;
     padding: 0;
 }
+
+.done{
+    background-color: #9af58e;
+}
+.nodone{
+    background-color: #f78888;
+}
