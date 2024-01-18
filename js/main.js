@@ -73,7 +73,7 @@ Vue.component("board", {
             column2:[],
             column3:[],
             column4:[],
-            allcolumns:[],
+            allColumns:[],
 
             id:0,
             title:null,
@@ -216,12 +216,41 @@ Vue.component("board", {
             }}
         }
     },
-    mounted() {
+    mounted(){
+        if (localStorage.getItem('allColumns')) {
+            try {
+                this.allColumns = JSON.parse(localStorage.getItem('allColumns'));
+                this.column1 = this.allColumns[0]
+                this.column2 = this.allColumns[1]
+                this.column3 = this.allColumns[2]
+                this.column4 = this.allColumns[3]
+            } catch(e) {
+                localStorage.removeItem('allColumns');
+            }
+        }
     },
-    props:{  
-    },
-    computed: {
-    }
+    watch:{
+        column1(){
+            this.allColumns = [this.column1,this.column2,this.column3, this.column4]
+            const parsed = JSON.stringify(this.allColumns);
+            localStorage.setItem('allColumns', parsed);
+        },
+        column2(){
+            allColumns = [this.column1, this.column2, this.column3, this.column4]
+            const parsed = JSON.stringify(this.allColumns);
+            localStorage.setItem('allColumns', parsed);
+        },
+        column3(){
+            allColumns = [this.column1, this.column2, this.column3, this.column4]             
+            const parsed = JSON.stringify(this.allColumns);
+            localStorage.setItem('allColumns', parsed);
+        },
+        column4(){
+            allColumns = [this.column1, this.column2, this.column3, this.column4]    
+            const parsed = JSON.stringify(this.allColumns);
+            localStorage.setItem('allColumns', parsed);
+      },
+  }
 });
 
 Vue.component("card", {
@@ -298,9 +327,7 @@ min="2023-01-01" max="2030-12-31">
                 this.$emit("edit",this.id,this.titlenew,this.descnew,this.deadlinenew); 
             }  
         }
-    },
-    mounted() {
-    },
+    }, 
     props:{ 
         column:{
             type:Number
