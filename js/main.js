@@ -1,11 +1,21 @@
 let eventBus = new Vue()
 
+window.addEventListener("DOMContentLoaded", () => {
+    // Найти элемент по id
+    const element = document.getElementById("p1");
+    // Добавить обработчик события `dragstart`
+    element.addEventListener("dragstart", dragstart_handler);
+});
+
+
 Vue.component("board", {
     template: `
 <div class="board">
 <ul class="columns">
 
-<li class="column">
+<li class="column"   @drop="Test($event, 1)"
+@dragover.prevent
+@dragenter.prevent >
     <h3>Запланированные задачи</h3>
          <form>
            <div id="createcard">
@@ -37,7 +47,8 @@ Vue.component("board", {
     </ul>
 </li>
 
-<li class="column">
+<li class="column" @drop="Test($event, 2)" @dragover.prevent
+@dragenter.prevent>
     <h3>Задачи в работе</h3>
     <ul>
         <li v-for="card in column2">
@@ -46,7 +57,8 @@ Vue.component("board", {
     </ul>
 </li>
 
-<li class="column">
+<li class="column" @drop="Test($event, 3)" @dragover.prevent
+@dragenter.prevent>
     <h3>Тестирование</h3> 
     <ul>
         <li v-for="card in column3">
@@ -55,7 +67,8 @@ Vue.component("board", {
     </ul> 
 </li>
 
-<li class="column">
+<li class="column" @drop="Test($event, 4)" @dragover.prevent
+@dragenter.prevent>
     <h3>Выполненные задачи</h3>  
     <ul>
         <li v-for="card in column4">
@@ -138,7 +151,6 @@ Vue.component("board", {
             if(col==3){
                 for(let i = 0; i < this.column3.length; i++){
                     if(this.column3[i].id==id){
-                        console.log(reason,)
                         this.column3[i].reasons.push(reason)
                         this.column2.push(this.column3[i])
                         this.column3.splice(i, 1)
@@ -191,6 +203,32 @@ Vue.component("board", {
                 }}
             }
         },
+
+
+        Test(evt,ncolumn){
+            const itemID = evt.dataTransfer.getData('oid')
+            const column = evt.dataTransfer.getData('column')
+            const reas = evt.dataTransfer.getData('reas')
+            console.log(itemID)
+            console.log(column)
+            console.log(ncolumn)
+
+            if(column==1&&ncolumn==2){
+                this.MoveR(itemID,column)
+            }
+            else if(column==2&&ncolumn==3){
+                this.MoveR(itemID,column)                
+            }
+            else if(column==3&&ncolumn==4){
+                this.MoveR(itemID,column)                
+            }
+            if(column==3&&ncolumn==2&&reas!="null"){
+                this.MoveL(itemID,column,reas)
+            }
+        },
+
+
+
         EditCard(id,titlenew,descnew,deadlinenew){
             this.log+=1
             for(let i = 0; i < this.column1.length; i++){
@@ -248,6 +286,7 @@ Vue.component("board", {
                 this.column2 = this.allColumns[1]
                 this.column3 = this.allColumns[2]
                 this.column4 = this.allColumns[3]
+                this.id = this.allColumns[4]
             } catch(e) {
                 localStorage.removeItem('allColumns');
             }
@@ -255,27 +294,27 @@ Vue.component("board", {
     },
     watch:{
         column1(){
-            this.allColumns = [this.column1,this.column2,this.column3, this.column4]
+            this.allColumns = [this.column1,this.column2,this.column3, this.column4,this.id]
             const parsed = JSON.stringify(this.allColumns);
             localStorage.setItem('allColumns', parsed);
         },
         column2(){
-            allColumns = [this.column1, this.column2, this.column3, this.column4]
+            allColumns = [this.column1, this.column2, this.column3, this.column4,this.id]
             const parsed = JSON.stringify(this.allColumns);
             localStorage.setItem('allColumns', parsed);
         },
         column3(){
-            allColumns = [this.column1, this.column2, this.column3, this.column4]             
+            allColumns = [this.column1, this.column2, this.column3, this.column4,this.id]             
             const parsed = JSON.stringify(this.allColumns);
             localStorage.setItem('allColumns', parsed);
         },
         column4(){
-            allColumns = [this.column1, this.column2, this.column3, this.column4]    
+            allColumns = [this.column1, this.column2, this.column3, this.column4,this.id]    
             const parsed = JSON.stringify(this.allColumns);
             localStorage.setItem('allColumns', parsed);
       },
       log(){
-        allColumns = [this.column1, this.column2, this.column3, this.column4]    
+        allColumns = [this.column1, this.column2, this.column3, this.column4,this.id]    
         const parsed = JSON.stringify(this.allColumns);
         localStorage.setItem('allColumns', parsed);        
       }
@@ -284,7 +323,7 @@ Vue.component("board", {
 
 Vue.component("card", {
     template: `
-<div class="card">
+<div class="card" draggable="true" :key="id" @dragstart="startDrag($event, id, column, reason)">
 <h4>{{this.title}}</h4>
 <p v-if="result=='success'">Карточка выполнена в срок<p>
 <p v-if="result=='fail'">Карточка не выполнена в срок<p>
@@ -359,7 +398,15 @@ min="2023-01-01" max="2030-12-31">
                 this.edit=false               
                 this.$emit("edit",this.id,this.titlenew,this.descnew,this.deadlinenew); 
             }  
-        }
+        },
+        startDrag(evt, oid, column,reason) {
+            evt.dataTransfer.dropEffect = 'move'
+            evt.dataTransfer.effectAllowed = 'move'
+            evt.dataTransfer.setData('oid', oid)
+            evt.dataTransfer.setData('column', column)
+            evt.dataTransfer.setData('reas', reason)
+          },
+      
     }, 
     props:{ 
         column:{

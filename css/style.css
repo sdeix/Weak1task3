@@ -12,6 +12,7 @@
     background-color: rgb(112, 112, 112);
     border-radius: 4px;
     padding: 8px;
+    min-height: 1000px;
 }
 
 .card{
